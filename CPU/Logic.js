@@ -120,6 +120,7 @@ function Decod3x8(CODI) {
 	return CODO;
 }
 
+
 //Дешифратор 2х4
 function Decod2x4(CODIREG) {
 	let CODOREG=[];
@@ -133,6 +134,7 @@ function Decod2x4(CODIREG) {
 	CODOREG[0]=AND(CODIREG[0],CODIREG[1]); //11
 	return CODOREG;
 }
+
 
 //Мультиплексор 2х1
 function Mult2x1(a,b,sel) {

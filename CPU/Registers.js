@@ -42,7 +42,6 @@ function RAMse(set,enable) {
 				document.querySelector("#text-display"+bin2dec(MAR)).textContent = RAM[bin2dec(MAR)];	
 		}			
 	}
-	return;
 }
 
 
@@ -75,11 +74,10 @@ function IPse(set,enable) {
 	document.querySelector("#IP").textContent = ""+paddy(bin2hex(IP),2);
 	
 	if(set){		
-			let divElement = document.querySelector("#mem-block"+bin2dec(IP));
-			divElement.classList.toggle("marker-ip");
-			divElement.classList.toggle("marker");
+		let divElement = document.querySelector("#mem-block"+bin2dec(IP));
+		divElement.classList.toggle("marker-ip");
+		divElement.classList.toggle("marker");
 	}
-	return;
 }
 
 
@@ -95,7 +93,6 @@ function IRs(set) {
 	IR[6]=D(BUS[6],set,IR[6]);
 	IR[7]=D(BUS[7],set,IR[7]);
 	document.querySelector("#IR").textContent = ""+IR[0]+IR[1]+IR[2]+IR[3]+" "+IR[4]+IR[5]+IR[6]+IR[7];
-	return;
 }
 
 
@@ -111,7 +108,6 @@ function MARs(set) {
 	MAR[6]=D(BUS[6],set,MAR[6]);
 	MAR[7]=D(BUS[7],set,MAR[7]);
 	document.querySelector("#MAR").textContent = ""+paddy(bin2hex(MAR),2);
-	return;
 }
 
 
@@ -136,7 +132,6 @@ function AXse(set,enable) {
 	BUS[6]=Mult2x1(BUS[6],AX[6],enable);
 	BUS[7]=Mult2x1(BUS[7],AX[7],enable);
 	document.querySelector("#AX").textContent = ""+paddy(bin2hex(AX),2);
-	return;
 }
 
 
@@ -161,7 +156,6 @@ function BXse(set,enable) {
 	BUS[6]=Mult2x1(BUS[6],BX[6],enable);
 	BUS[7]=Mult2x1(BUS[7],BX[7],enable);
 	document.querySelector("#BX").textContent = ""+paddy(bin2hex(BX),2);
-	return;
 }
 
 
@@ -186,7 +180,6 @@ function CXse(set,enable) {
 	BUS[6]=Mult2x1(BUS[6],CX[6],enable);
 	BUS[7]=Mult2x1(BUS[7],CX[7],enable);
 	document.querySelector("#CX").textContent = ""+paddy(bin2hex(CX),2);
-	return;
 }
 
 
@@ -211,7 +204,6 @@ function DXse(set,enable) {
 	BUS[6]=Mult2x1(BUS[6],DX[6],enable);
 	BUS[7]=Mult2x1(BUS[7],DX[7],enable);
 	document.querySelector("#DX").textContent = ""+paddy(bin2hex(DX),2);
-	return;
 }
 
 
@@ -227,6 +219,5 @@ function TMPs(set) {
 	TMP[6]=D(BUS[6],set,TMP[6]);
 	TMP[7]=D(BUS[7],set,TMP[7]);
 	document.querySelector("#TMP").textContent = ""+paddy(bin2hex(TMP),2);
-	return;
 }
 

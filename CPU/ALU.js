@@ -116,5 +116,4 @@ function RegisterACC4(set,enable,bus1) {
 			document.querySelector("#flag-A").textContent = ""+FL[1];
 			document.querySelector("#flag-E").textContent = ""+FL[2];
 			document.querySelector("#flag-Z").textContent = ""+FL[3];
-	return;
 }
