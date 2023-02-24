@@ -1,4 +1,4 @@
-# 8-bit AON Computer
+# Виртуальный процессор 8-bit-AON
 
 ![Screenshot1.jpg](Screenshot1.jpg)
 
