@@ -1,8 +1,14 @@
 #include <iostream>
+#include <fstream>
+#include <sstream>
 #include <string>
-#include <vector>
 #include <cstring>
-#include "civetweb.h"
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <unistd.h>
+
+#define BUFFER_SIZE 1024
+#define PORT 8080
 
 // Функция для проверки окончания строки
 bool ends_with(const std::string& str, const std::string& suffix) {
@@ -10,82 +16,140 @@ bool ends_with(const std::string& str, const std::string& suffix) {
            str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
 }
 
-// Функция для обработки запросов к статическим файлам
-int handle_request(struct mg_connection *conn, void *cbdata) {
-    const struct mg_request_info *req_info = mg_get_request_info(conn);
-    std::string uri(req_info->local_uri);
+// Функция для обработки HTTP запросов от клиента
+void handle_client(int client_socket) {
+    char request_buffer[BUFFER_SIZE];
+    ssize_t bytes_received;
 
-    // Путь к файлу
-    std::string filepath = "./www" + uri;
-
-    // Открытие файла
-    FILE *file = fopen(filepath.c_str(), "rb");
-    if (file == nullptr) {
-        // Если файл не найден, возвращаем 404
-        mg_send_http_error(conn, 404, "File not found");
-        return 404;
+    // Чтение HTTP запроса от клиента
+    bytes_received = recv(client_socket, request_buffer, BUFFER_SIZE, 0);
+    if (bytes_received < 0) {
+        std::cerr << "Error reading from socket" << std::endl;
+        close(client_socket);
+        return;
     }
 
-	std::cout << "BEGIN" << std::endl;
+    // Извлечение URI из HTTP запроса
+    std::istringstream request_stream(request_buffer);
+    std::string request_line;
+    std::getline(request_stream, request_line);
 
-    // Чтение файла по частям и отправка его содержимого
-    constexpr size_t buffer_size = 1024; // Размер буфера для чтения
-    char buffer[buffer_size];
-    size_t bytes_read;
-    
-    std::cout << buffer << std::endl;
+    std::string method, uri, http_version;
+    std::istringstream request_line_stream(request_line);
+    request_line_stream >> method >> uri >> http_version;
 
-    // Определение MIME-типа
-    std::string mime_type;
+    // Проверка на метод GET
+    if (method != "GET") {
+        std::cerr << "Unsupported method: " << method << std::endl;
+        close(client_socket);
+        return;
+    }
+
+    // Если URI равен "/", заменяем его на "/index.html"
+    if (uri == "/") {
+        uri = "/index.html";
+    }
+
+    // Убираем начальный слэш из URI
+    uri.erase(0, 1);
+
+    // Формируем полный путь к файлу
+    std::string file_path = "./www/" + uri;
+    std::cerr << file_path << std::endl;
+
+    // Открываем файл
+    std::ifstream file(file_path, std::ios::binary);
+    if (!file.is_open()) {
+        std::cerr << "Failed to open file: " << file_path << std::endl;
+        // Отправляем HTTP заголовок об ошибке
+        std::string error_response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/plain\r\n\r\nFile not found";
+        send(client_socket, error_response.c_str(), error_response.size(), 0);
+        close(client_socket);
+        return;
+    }
+
+    // Отправляем HTTP заголовок клиенту
+    std::string response = "HTTP/1.1 200 OK\r\nContent-Type: ";
     if (ends_with(uri, ".html")) {
-        mime_type = "text/html";
+        response += "text/html\r\n";
     } else if (ends_with(uri, ".css")) {
-        mime_type = "text/css";
+        response += "text/css\r\n";
     } else if (ends_with(uri, ".js")) {
-        mime_type = "application/javascript";
+        response += "application/javascript\r\n";
     } else {
-        mime_type = "application/octet-stream";
+        response += "application/octet-stream\r\n";
+    }
+    response += "\r\n";
+    send(client_socket, response.c_str(), response.size(), 0);
+
+    // Читаем и отправляем содержимое файла по частям
+    char buffer[BUFFER_SIZE];
+    ssize_t bytes_read;
+    while (true) {
+        file.read(buffer, BUFFER_SIZE);
+        bytes_read = file.gcount();
+        if (bytes_read > 0) {
+            send(client_socket, buffer, bytes_read, 0);
+        }
+        if (file.eof()) {
+            break;
+        }
     }
 
-    // Отправка заголовков
-    mg_send_http_ok(conn, mime_type.c_str(), -1); // -1 для передачи частями
-
-    // Чтение файла по частям и отправка его содержимого
-    while ((bytes_read = fread(buffer, 1, buffer_size, file)) > 0) {
-        mg_write(conn, buffer, bytes_read);
-    }
-
-    fclose(file);
-    
-    std::cout << "END" << std::endl;
-
-    return 200;
+    // Закрываем файл и соединение с клиентом
+    file.close();
+    close(client_socket);
 }
 
-int main(int argc, char *argv[]) {
-    const char *options[] = {
-        "document_root", ".",  // Корневая директория для раздачи файлов
-        "listening_ports", "8080",  // Порт для прослушивания
-        nullptr
-    };
+int main() {
+    int server_socket, client_socket;
+    struct sockaddr_in server_addr, client_addr;
+    socklen_t sin_size = sizeof(struct sockaddr_in);
 
-    // Создание и запуск сервера
-    struct mg_callbacks callbacks;
-    memset(&callbacks, 0, sizeof(callbacks));
-    struct mg_context *ctx = mg_start(&callbacks, nullptr, options);
+    // Создаем сокет
+    server_socket = socket(AF_INET, SOCK_STREAM, 0);
+    if (server_socket < 0) {
+        std::cerr << "Failed to create socket" << std::endl;
+        return 1;
+    }
 
-    // Обработчик запросов
-    mg_set_request_handler(ctx, "/", handle_request, nullptr);
+    // Настраиваем структуру сетевого адреса сервера
+    memset(&server_addr, 0, sizeof(server_addr));
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(PORT); // Порт 
+    server_addr.sin_addr.s_addr = INADDR_ANY;
+
+    // Привязываем сокет к IP и порту
+    if (bind(server_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
+        std::cerr << "Bind failed" << std::endl;
+        close(server_socket);
+        return 1;
+    }
+
+    // Слушаем порт на входящие соединения
+    if (listen(server_socket, 10) < 0) {
+        std::cerr << "Listen failed" << std::endl;
+        close(server_socket);
+        return 1;
+    }
 
     std::cout << "Server started on port 8080" << std::endl;
 
-    // Ожидание завершения работы сервера
-    std::string dummy;
-    std::getline(std::cin, dummy);
+    // Основной цикл сервера
+    while (true) {
+        // Принимаем входящее соединение
+        client_socket = accept(server_socket, (struct sockaddr *)&client_addr, &sin_size);
+        if (client_socket < 0) {
+            std::cerr << "Accept failed" << std::endl;
+            continue;
+        }
 
-    // Остановка сервера
-    mg_stop(ctx);
+        // Обрабатываем запрос от клиента в отдельном потоке или процессе
+        handle_client(client_socket);
+    }
 
+    // Закрываем серверный сокет
+    close(server_socket);
     return 0;
 }
 

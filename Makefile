@@ -1,6 +1,6 @@
 .PHONY: main
 main: *.go deps
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags "-s -w" -trimpath -o 8bitAONgo .
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags "-s -w" -trimpath -o AON .
 
 
 .PHONY:deps

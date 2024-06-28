@@ -1,22 +1,23 @@
-# Используем минималистичный базовый образ busybox
-FROM busybox
+# Используем минималистичный базовый образ ubuntu
+FROM ubuntu:latest
 
-# Указываем, что контейнер будет прослушивать порт 80
-EXPOSE 443
+# Установка необходимых пакетов, если это требуется
+# RUN apt-get update && apt-get install -y <пакеты>
+
+# Указываем, что контейнер будет прослушивать порт 8080
+EXPOSE 8080
 
 # Копируем необходимые файлы и директории в контейнер
-RUN mkdir /MEX
-COPY MEX12 /MEX
-COPY launch.sh /MEX
-COPY localhost.crt /MEX
-COPY localhost.key /MEX
+RUN mkdir /AON
+COPY launch.sh AON /AON/
+COPY www /AON/www
 
 # Устанавливаем права на выполнение для определенных файлов
-RUN chmod +x /MEX/MEX12
-RUN chmod +x /MEX/launch.sh
+RUN chmod +x /AON/AON
+RUN chmod +x /AON/launch.sh
 
 # Устанавливаем рабочую директорию
-WORKDIR /MEX
+WORKDIR /AON
 
-# Определяем команду для запуска скрипта поднимающего MEX12 при старте контейнера
+# Определяем команду для запуска скрипта поднимающего AON при старте контейнера
 CMD ["./launch.sh"]

@@ -9,9 +9,9 @@ import os
 # git clone https://gorcom2012@bitbucket.org/p4p_service/market_tv.git
 #userGit = "gorcom2012"
 #repoGit = "p4p_service/market_tv"
-container_name = "mex12"
-image_name = "mex12"
-ports = {"6010/tcp": 443}
+container_name = "aon"
+image_name = "aon"
+ports = {"8080/tcp": 8080}
 
 
 # Удалить __pycache__
@@ -320,7 +320,11 @@ elif command == "git":
 
 elif command == "docker":
 	# Сборка сервера
-	make_command("MEX", "./")
+	subprocess.run(["chmod", "+x", "make.sh"])
+	subprocess.run(["./make.sh"])
+	print("OK: MAKE AON")
+	# Сборка сервера
+	#make_command("8-bit-AON", "./")
 	# Создание Docker контейнера
 	stop_docker_compose('./docker-compose.yml')
 	remove_containers_by_name(container_name)
@@ -331,8 +335,8 @@ elif command == "docker":
 	build_container_from_dockerfile("./", image_name)
 	#run_container_in_background(image_name, container_name, ports)
 	run_docker_compose()
-    
-   
+		
+		   
 elif command == "stop":
 	# Остановить контейнер Docker
 	remove_containers_by_name(container_name)

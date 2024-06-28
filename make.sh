@@ -1,1 +1,3 @@
-g++ -std=c++11 -o 8bitAONcpp main.cpp -lcivetweb
+#!/bin/bash
+
+g++ -std=c++11 main.cpp -o AON
