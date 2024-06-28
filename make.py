@@ -22,7 +22,7 @@ def del_pycache():
 # Вывод сообщения об ошибке
 def print_error_message():
     print("Выбери один из параметров:")
-    print("  mex     - собрать сервер MEX")
+    print("  make    - собрать веб-сервер")
     print("  ssl     - создать сертификат SSL")
     print("  git     - commit to Bitbucket")
     print("  docker  - создать Docker контейнер")
@@ -275,7 +275,7 @@ if len(sys.argv) != 2 and not (len(sys.argv) == 3 and sys.argv[1] == "git"):
     sys.exit(1)
 
 valid_commands = [
-				  "mex",
+				  "make",
 				  "ssl", 
 				  "git", 
 				  "docker",
@@ -288,9 +288,9 @@ if command not in valid_commands:
     del_pycache()
     sys.exit(1)
 
-if (sys.argv[1] == "mex"):
+if (sys.argv[1] == "make"):
 	# Сборка сервера
-    make_command("MEX", "./")
+    make_command("8-bit-AON", "./")
     
     
 elif command == "ssl":

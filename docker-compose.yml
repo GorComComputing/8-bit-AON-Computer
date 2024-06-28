@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  # Контейнер PostgreSQL
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: Market      # Название создаваемой базы данных
+      POSTGRES_USER: user      # Имя пользователя для подключения к базе данных
+      POSTGRES_PASSWORD: pass  # Пароль для пользователя
+    volumes:
+      - ./migrate_1.sql:/docker-entrypoint-initdb.d/migrate_1.sql # Инициализационный скрипт SQL
+    ports:
+      - "8082:5432"  # Переопределение порта: внешний 8082 -> внутренний 5432 (стандартный порт PostgreSQL)
+    networks:
+      - mynetwork    # Название сети для взаимодействия с другими контейнерами
+
+  # Контейнер MEX12
+  my_service:
+    image: mex12:latest
+    depends_on:
+      - postgres  # Зависимость: my_service не запустится до тех пор, пока не запустится postgres
+    environment:
+      DATABASE_URL: postgres://user:pass@postgres:5432/Market  # URL для подключения к базе данных
+    ports:
+      - "443:6010"  # Переопределение порта: внешний 443 -> внутренний 6010
+    networks:
+      - mynetwork   # Название сети для взаимодействия с другими контейнерами
+      
+networks:
+  mynetwork:  # Определение пользовательской сети для взаимодействия контейнеров
+
