@@ -1,0 +1,8 @@
+PCB
+
+
+8-bit CPU RISC	OUT:Display			vCPU 16-bit CISC	SP:stack
+				IN:Keyboard				OS	Menu address program, command
+				IN/OUT:Net				:WozMon Assembler
+										:BASIC	
+											:Games
