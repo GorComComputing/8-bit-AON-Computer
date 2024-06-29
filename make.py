@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 import subprocess
 import sys
-#import secret
+import secret
 import docker
 import os
 #import tests
@@ -9,8 +9,8 @@ import os
 # git clone https://gorcom2012@bitbucket.org/p4p_service/market_tv.git
 #userGit = "gorcom2012"
 #repoGit = "p4p_service/market_tv"
-container_name = "aon"
-image_name = "aon"
+container_name = "gorcomcomputing/webserver"
+image_name = "gorcomcomputing/webserver"
 ports = {"8080/tcp": 8080}
 
 
@@ -27,6 +27,7 @@ def print_error_message():
     print("  git     - commit to Bitbucket")
     print("  docker  - создать Docker контейнер")
     print("  stop  	 - остановить Docker контейнер")
+    print("  hub     - отправить контейнер в Docker Hub")
     
     
 # Выполнить команду make
@@ -267,6 +268,15 @@ def run_docker_compose(compose_file='docker-compose.yml'):
 def stop_docker_compose(compose_file_path):
 	subprocess.run(["docker-compose", "down", "-v"])
 	print("OK: docker-compose DOWN")
+	
+	
+# Отправка контейнера в Docker Hub
+def docker_push():    
+	subprocess.run(["docker", "login", "-u", f"{secret.dockerLogin}", "-p", f"{secret.dockerPassword}", "docker.io"])
+	print("DOCKER login OK")
+
+	subprocess.run(["docker", "push", f"{secret.dockerUser}/{secret.dockerRepo}"])
+	print("DOCKER push OK")
     
 
 if len(sys.argv) != 2 and not (len(sys.argv) == 3 and sys.argv[1] == "git"):
@@ -280,6 +290,7 @@ valid_commands = [
 				  "git", 
 				  "docker",
 				  "stop",
+				  "hub",
 				  ]
 				  
 command = sys.argv[1]
@@ -344,6 +355,11 @@ elif command == "stop":
 	remove_all_exited_containers()
 	#remove_image_by_name(image_name)
 	remove_dangling_images()
+	
+	
+elif command == "hub":
+    # Отправка контейнера в Docker Hub
+    docker_push()
 
 	
 else:

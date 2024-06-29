@@ -1,23 +1,15 @@
-# Используем минималистичный базовый образ ubuntu
-FROM ubuntu:latest
+# Use the official Nginx image from the Docker Hub
+FROM nginx:alpine
 
-# Установка необходимых пакетов, если это требуется
-# RUN apt-get update && apt-get install -y <пакеты>
+# Copy custom Nginx configuration file
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Указываем, что контейнер будет прослушивать порт 8080
-EXPOSE 8080
+# Copy static files to the Nginx html directory
+COPY www /usr/share/nginx/html
 
-# Копируем необходимые файлы и директории в контейнер
-RUN mkdir /AON
-COPY launch.sh AON /AON/
-COPY www /AON/www
+# Expose port 8080
+EXPOSE 80
 
-# Устанавливаем права на выполнение для определенных файлов
-RUN chmod +x /AON/AON
-RUN chmod +x /AON/launch.sh
+# Start Nginx server
+CMD ["nginx", "-g", "daemon off;"]
 
-# Устанавливаем рабочую директорию
-WORKDIR /AON
-
-# Определяем команду для запуска скрипта поднимающего AON при старте контейнера
-CMD ["./launch.sh"]

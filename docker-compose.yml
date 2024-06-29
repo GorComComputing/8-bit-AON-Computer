@@ -1,11 +1,11 @@
 version: '3.8'
 
 services:
-  # Контейнер AON
-  aon:
-    image: aon:latest
+  # Контейнер Web-Server
+  webserver:
+    image: gorcomcomputing/webserver:latest
     ports:
-      - "8080:8080"  # Переопределение порта: внешний 8080 -> внутренний 8080
+      - "80:80"  # Переопределение порта: внешний 8080 -> внутренний 8080
     networks:
       - mynetwork   # Название сети для взаимодействия с другими контейнерами
       
